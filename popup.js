@@ -47,6 +47,29 @@ function getCurrentTabUrl(callback) {
     // alert(url); // Shows "undefined", because chrome.tabs.query is async.
 }
 
+var ajax = {
+    get: function(url, headers, callback, errorCallback) {
+        var x = new XMLHttpRequest();
+        x.open('GET', url);
+        if (typeof headers === 'object') {
+            for (var name in headers) {
+                var header = headers[name];
+                x.setRequestHeader(name, header);
+            }
+        }
+        x.onload = function() {
+            if (typeof headers === 'function') {
+                headers(x.response);
+            } else {
+                callback(x.response);
+            }
+        };
+        x.onerror = errorCallback;
+        x.send();
+        return x;
+    }
+};
+
 /**
  * @param {string} searchTerm - Search term for Google Image search.
  * @param {function(string,number,number)} callback - Called when an image has
@@ -55,18 +78,10 @@ function getCurrentTabUrl(callback) {
  *   The callback gets a string that describes the failure reason.
  */
 function getImageUrl(searchTerm, callback, errorCallback) {
-    // Google image search - 100 searches per day.
-    // https://developers.google.com/image-search/
-    var searchUrl = 'http://rutracker.org/forum/tracker.php?nm=' +
+    var url = 'http://rutracker.org/forum/tracker.php?nm=' +
         encodeURIComponent(searchTerm);
-    var x = new XMLHttpRequest();
-    x.open('GET', searchUrl);
-    // The Google image search API responds with JSON, so let Chrome parse it.
-    // x.responseType = 'json';
-    x.onload = function() {
-        // Parse and process the response from Google Image Search.
 
-        var response = x.response;
+    ajax.get(url, function(response) {
         var container = document.createElement('div');
         container.innerHTML = response;
 
@@ -88,29 +103,12 @@ function getImageUrl(searchTerm, callback, errorCallback) {
                 link: link,
                 title: title
             });
+
+            callback(titles);
         };
-
-
-        // if (!response || !response.responseData || !response.responseData.results ||
-        //     response.responseData.results.length === 0) {
-        //     errorCallback('No response from Google Image search!');
-        //     return;
-        // }
-        // var firstResult = response.responseData.results[0];
-        // // Take the thumbnail instead of the full image to get an approximately
-        // // consistent image size.
-        // var imageUrl = firstResult.tbUrl;
-        // var width = parseInt(firstResult.tbWidth);
-        // var height = parseInt(firstResult.tbHeight);
-        // console.assert(
-        //     typeof imageUrl == 'string' && !isNaN(width) && !isNaN(height),
-        //     'Unexpected respose from the Google Image Search API!');
-        callback(titles);
-    };
-    x.onerror = function() {
+    }, function() {
         errorCallback('Network error.');
-    };
-    x.send();
+    });
 }
 
 function renderStatus(statusText) {
@@ -125,7 +123,20 @@ function createRow(item) {
 
         if (prop === 'link') {
             var a = document.createElement('a');
-            a.href = item[prop].href;
+
+            (function(href) {
+                a.onclick = function() {
+
+                    var x = ajax.get(href, {
+                        "X-Requested-With": "XMLHttpRequest",
+                        "X-Alt-Referer": "http://rutracker.org"
+                    }, function(data) {
+                        alert(data);
+                    });
+
+                }
+            })('https://jsonp.nodejitsu.com/?url=' + item[prop].href);
+
             a.innerText = item[prop].size;
             a.target = "_blank";
             td.appendChild(a);
@@ -141,10 +152,16 @@ function createRow(item) {
 
 function renderTable(items) {
     var table = document.getElementById('table');
-
+    printResultsAmount(items);
     for (var i = 0; i < items.length; i++) {
         table.appendChild(createRow(items[i]));
     }
+}
+
+function printResultsAmount(items) {
+    var resultsCount = document.getElementById('results-count');
+
+    resultsCount.getElementsByTagName('span')[0].innerText = items.length;
 }
 
 document.addEventListener('DOMContentLoaded', function() {
