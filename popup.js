@@ -1,14 +1,57 @@
-// Copyright (c) 2014 The Chromium Authors. All rights reserved.
-// Use of this source code is governed by a BSD-style license that can be
-// found in the LICENSE file.
+function Movie(params) {
+    this.id = params.id;
+    this.title = params.title;
+    this.size = params.size;
+    this.year = params.year;
+    this.source = params.source;
+    this.resolution = params.resolution;
+    this.specs = params.specs;
+};
 
-/**
- * Get the current URL.
- *
- * @param {function(string)} callback - called when the URL of the current tab
- *   is found.
- **/
-function getCurrentTabUrl(callback) {
+Movie.prototype.generateRow = function() {
+    var tr = document.createElement('tr');
+    var movie = this;
+
+    tr.className = 'row';
+
+    var generateCell = function(property) {
+        var td = document.createElement('td');
+        td.className = 'cell ' + property;
+        td.innerText = movie[property];
+        return td;
+    };
+
+    var addCell = function(property) {
+        tr.appendChild(generateCell(property));
+    }
+
+    addCell('resolution');
+    addCell('size');
+    addCell('year');
+    addCell('title');
+
+    return tr;
+};
+
+function MoviesCollection(movies) {
+    this.movies = movies || [];
+};
+
+MoviesCollection.prototype.add = function(movie) {
+    this.movies.push(movie);
+};
+
+MoviesCollection.prototype.get = function(sortProp, desc) {
+    return this.movies.sort(function(a, b) {
+        if (desc) {
+            return +a[sortProp] - +b[sortProp];
+        } else {
+            return +b[sortProp] - +a[sortProp];
+        }
+    });
+};
+
+function getMovieTitle(callback) {
     // Query filter to be passed to chrome.tabs.query - see
     // https://developer.chrome.com/extensions/tabs#method-query
     var queryInfo = {
@@ -77,17 +120,17 @@ var ajax = {
  * @param {function(string)} errorCallback - Called when the image is not found.
  *   The callback gets a string that describes the failure reason.
  */
-function getImageUrl(searchTerm, callback, errorCallback) {
-    var url = 'http://rutracker.org/forum/tracker.php?f=313&nm=' +
-        encodeURIComponent(searchTerm);
+function search(searchTerm, callback, errorCallback) {
+    var nnm = 'http://nnm-club.me/forum/tracker.php?f=227&nm=';
+    var rutracker = 'http://rutracker.org/forum/tracker.php?f=313&nm=';
+    var encoded = encodeURIComponent(searchTerm);
+    var movies = new MoviesCollection();
 
-    ajax.get(url, function(response) {
+    ajax.get(rutracker + encoded, function(response) {
         var container = document.createElement('div');
         container.innerHTML = response;
 
         var results = container.querySelectorAll('#tor-tbl .tCenter.hl-tr');
-
-        var titles = [];
 
         for (var i = 0; i < results.length; i++) {
             var fields = results[i].getElementsByTagName('td');
@@ -107,21 +150,25 @@ function getImageUrl(searchTerm, callback, errorCallback) {
                 resolution = resolution[0];
             }
 
-            titles.push({
-                // category: category,
+            movies.add(new Movie({
                 resolution: resolution,
-                topicId: topicId,
+                id: topicId,
                 size: size,
                 year: year,
-                title: title,
-                // specs: specs
-            });
+                title: title
+            }));
+        }
 
-        };
-        titles = titles.sort(function(a, b) {
-            return +a.resolution - +b.resolution;
-        });
-        callback(titles);
+        ajax.get(nnm + encoded, function(response) {
+            container.innerHTML = response;
+
+            results = container.querySelectorAll('.forumline.tablesorter tr[class]');
+            callback(movies.get('resolution', true));
+            printResultsAmount(results);
+        }, function() {
+            errorCallback('Network error.');
+        })
+
     }, function() {
         errorCallback('Network error.');
     });
@@ -170,7 +217,7 @@ function renderTable(items) {
     printResultsAmount(items);
     var rows = [];
     for (var i = 0; i < items.length; i++) {
-        rows.push(createRow(items[i]));
+        rows.push(items[i].generateRow());
     }
 
     printResultsAmount(rows);
@@ -189,8 +236,8 @@ function printResultsAmount(items) {
 
 document.addEventListener('DOMContentLoaded', function() {
 
-    getCurrentTabUrl(function(url) {
-        getImageUrl(url, function(items) {
+    getMovieTitle(function(title) {
+        search(title, function(items) {
             renderTable(items);
         }, function(errorMessage) {
             renderStatus('Cannot display image. ' + errorMessage);
@@ -198,7 +245,7 @@ document.addEventListener('DOMContentLoaded', function() {
         // Put the image URL in Google search.
         // renderStatus('Performing Google Image search for ' + url);
 
-        // getImageUrl(url, function(imageUrl, width, height) {
+        // search(url, function(imageUrl, width, height) {
 
         //     renderStatus('Search term: ' + url + '\n' +
         //         'Google image search result: ' + imageUrl);

@@ -20,6 +20,7 @@
         "activeTab",
 
         "*://rutracker.org/*",
-        "*://www.kinopoisk.ru/*"
+        "*://www.kinopoisk.ru/*",
+        "*://nnm-club.me/*"
     ]
 }
