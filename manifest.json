@@ -11,9 +11,15 @@
         "default_title": "Click here!"
     },
 
+    "background": {
+        "scripts": ["script.js"]
+    },
+
     "permissions": [
         "activeTab",
-        "http://www.kinopoisk.ru/",
-        "http://rutracker.org/"
+        "webRequest",
+        "webRequestBlocking",
+        "*://www.kinopoisk.ru/*",
+        "*://rutracker.org/*"
     ]
 }

@@ -1,0 +1,5 @@
+# Netscape HTTP Cookie File
+# http://www.netscape.com/newsref/std/cookie_spec.html
+# This is a generated file!  Do not edit.
+
+.rutracker.org	TRUE	/forum/	FALSE	1454078923	bb_data	1-1425460-vn5a1kmil3bOYbM7fZbd-1414116421-1422542923-1422542923-346462472-1

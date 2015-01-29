@@ -98,14 +98,11 @@ function getImageUrl(searchTerm, callback, errorCallback) {
             var title = desc.match(/(.*?)\s*\((.*?)\)/g)[0];
             var year = desc.match(/((19|20)[\d]{2})/g)[0];
             var specs = desc.match(/\[.*\]/g)[0];
+            var size = fields[5].getElementsByTagName('a')[0].innerText.slice(0, -2);
 
-            var link = {
-                href: topicId,
-                size: fields[5].getElementsByTagName('a')[0].innerText
-            };
             var resolution = desc.match(/720|1080/);
             if (!resolution) {
-                resolution = 'Unknown';
+                resolution = 0;
             } else {
                 resolution = resolution[0];
             }
@@ -113,7 +110,8 @@ function getImageUrl(searchTerm, callback, errorCallback) {
             titles.push({
                 // category: category,
                 resolution: resolution,
-                link: link,
+                topicId: topicId,
+                size: size,
                 year: year,
                 title: title,
                 // specs: specs
@@ -138,30 +136,24 @@ function createRow(item) {
 
     for (var prop in item) {
         var td = document.createElement('td');
-        if (prop === 'link') {
+        if (prop === 'topicId') {
+            continue;
+        }
+        if (prop === 'title') {
             var a = document.createElement('a');
-            a.href = 'http://rutracker.org/forum/viewtopic.php?t=' + item[prop].href;
-            // (function(href) {
-            //     a.onclick = function() {
-
-            //         var x = ajax.get(href, function(data) {
-            //             data.match
-            //         });
-
-            //     }
-            // })('https://jsonp.nodejitsu.com/?url=' + a.href);
-            ajax.get('https://jsonp.nodejitsu.com/?url=' + a.href, function(data) {
-                a.innerText = data.match(/[0-9A-F]{40}/);
-            });
-            // a.innerText = item[prop].size;
+            a.href = 'http://rutracker.org/forum/viewtopic.php?t=' + item.topicId;
+            a.innerText = item.title;
             a.target = "_blank";
             td.appendChild(a);
         } else {
             td.className = prop;
-            if (prop === 'resolution') {
-                td.className += ' res' + item[prop];
-            }
             td.innerText = item[prop];
+            if (prop === 'resolution') {
+                tr.className += ' res' + item[prop];
+                if (item[prop] === 0) {
+                    td.innerText = 'Unknown';
+                }
+            }
         }
         tr.appendChild(td);
     }
@@ -196,6 +188,7 @@ function printResultsAmount(items) {
 }
 
 document.addEventListener('DOMContentLoaded', function() {
+
     getCurrentTabUrl(function(url) {
         getImageUrl(url, function(items) {
             renderTable(items);
