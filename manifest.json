@@ -5,21 +5,21 @@
     "description": "This extension shows a Google Image search result for the current page",
     "version": "1.0",
 
-    "browser_action": {
+    "page_action": {
         "default_icon": "icon.png",
         "default_popup": "popup.html",
         "default_title": "Click here!"
     },
 
     "background": {
-        "scripts": ["script.js"]
+        "scripts": ["background.js"]
     },
 
     "permissions": [
+        "tabs",
         "activeTab",
-        "webRequest",
-        "webRequestBlocking",
-        "*://www.kinopoisk.ru/*",
-        "*://rutracker.org/*"
+
+        "*://rutracker.org/*",
+        "*://www.kinopoisk.ru/*"
     ]
 }
