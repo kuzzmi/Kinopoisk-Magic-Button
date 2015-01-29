@@ -19,6 +19,19 @@
         overflow: hidden;
         max-width: 600px;
       }
+      .resolution {
+        font-weight: bold;
+        text-align: center;
+      }
+      .resolution.res1080 {
+        color: green;
+      }
+      .resolution.res720 {
+        color: #888800;
+      }
+      .resolution.resUnknown {
+        color: red;
+      }
     </style>
 
     <!--
@@ -36,8 +49,11 @@
       <table id="table">
         <thead>
           <tr>
-            <th>Category</th>
+            <th>Resolution</th>
+            <th>Size</th>
+            <th>Year</th>
             <th>Title</th>
+            <!-- <th>Specs</th> -->
           </tr>
         </thead>
       </table>

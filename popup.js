@@ -78,7 +78,7 @@ var ajax = {
  *   The callback gets a string that describes the failure reason.
  */
 function getImageUrl(searchTerm, callback, errorCallback) {
-    var url = 'http://rutracker.org/forum/tracker.php?nm=' +
+    var url = 'http://rutracker.org/forum/tracker.php?f=313&nm=' +
         encodeURIComponent(searchTerm);
 
     ajax.get(url, function(response) {
@@ -92,20 +92,37 @@ function getImageUrl(searchTerm, callback, errorCallback) {
         for (var i = 0; i < results.length; i++) {
             var fields = results[i].getElementsByTagName('td');
             var category = fields[2].innerText.trim();
-            var title = fields[3].innerText.trim();
+            var desc = fields[3].innerText.trim();
+
+            var title = desc.match(/(.*?)\s*\((.*?)\)/g)[0];
+            var year = desc.match(/((19|20)[\d]{2})/g)[0];
+            var specs = desc.match(/\[.*\]/g)[0];
+
             var link = {
                 href: fields[5].getElementsByTagName('a')[0].href,
                 size: fields[5].getElementsByTagName('a')[0].innerText
             };
+            var resolution = desc.match(/720|1080/);
+            if (!resolution) {
+                resolution = 'Unknown';
+            } else {
+                resolution = resolution[0];
+            }
 
             titles.push({
-                category: category,
+                // category: category,
+                resolution: resolution,
                 link: link,
-                title: title
+                year: year,
+                title: title,
+                // specs: specs
             });
 
-            callback(titles);
         };
+        titles = titles.sort(function(a, b) {
+            return +a.resolution - +b.resolution;
+        });
+        callback(titles);
     }, function() {
         errorCallback('Network error.');
     });
@@ -120,28 +137,30 @@ function createRow(item) {
 
     for (var prop in item) {
         var td = document.createElement('td');
-
         if (prop === 'link') {
             var a = document.createElement('a');
+            a.href = item[prop].href;
+            // (function(href) {
+            // a.onclick = function() {
 
-            (function(href) {
-                a.onclick = function() {
+            //     var x = ajax.get(href, {
+            //         "X-Requested-With": "XMLHttpRequest",
+            //         "X-Alt-Referer": "http://rutracker.org"
+            //     }, function(data) {
+            //         alert(data);
+            //     });
 
-                    var x = ajax.get(href, {
-                        "X-Requested-With": "XMLHttpRequest",
-                        "X-Alt-Referer": "http://rutracker.org"
-                    }, function(data) {
-                        alert(data);
-                    });
-
-                }
-            })('https://jsonp.nodejitsu.com/?url=' + item[prop].href);
+            // }
+            // })('https://jsonp.nodejitsu.com/?url=' + item[prop].href);
 
             a.innerText = item[prop].size;
             a.target = "_blank";
             td.appendChild(a);
         } else {
             td.className = prop;
+            if (prop === 'resolution') {
+                td.className += ' res' + item[prop];
+            }
             td.innerText = item[prop];
         }
         tr.appendChild(td);
@@ -150,12 +169,24 @@ function createRow(item) {
     return tr;
 }
 
+Element.prototype.prependChild = function(child) {
+    this.insertBefore(child, this.firstChild);
+};
+
 function renderTable(items) {
     var table = document.getElementById('table');
     printResultsAmount(items);
+    var rows = [];
     for (var i = 0; i < items.length; i++) {
-        table.appendChild(createRow(items[i]));
+        rows.push(createRow(items[i]));
     }
+
+    printResultsAmount(rows);
+    // table.children = rows;
+    for (var i = 0; i < rows.length; i++) {
+        table.prependChild(rows[i]);
+    };
+    console.log(rows.length);
 }
 
 function printResultsAmount(items) {
