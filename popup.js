@@ -93,13 +93,14 @@ function getImageUrl(searchTerm, callback, errorCallback) {
             var fields = results[i].getElementsByTagName('td');
             var category = fields[2].innerText.trim();
             var desc = fields[3].innerText.trim();
+            var topicId = fields[3].getElementsByTagName('a')[0].dataset.topic_id;
 
             var title = desc.match(/(.*?)\s*\((.*?)\)/g)[0];
             var year = desc.match(/((19|20)[\d]{2})/g)[0];
             var specs = desc.match(/\[.*\]/g)[0];
 
             var link = {
-                href: fields[5].getElementsByTagName('a')[0].href,
+                href: topicId,
                 size: fields[5].getElementsByTagName('a')[0].innerText
             };
             var resolution = desc.match(/720|1080/);
@@ -139,21 +140,20 @@ function createRow(item) {
         var td = document.createElement('td');
         if (prop === 'link') {
             var a = document.createElement('a');
-            a.href = item[prop].href;
+            a.href = 'http://rutracker.org/forum/viewtopic.php?t=' + item[prop].href;
             // (function(href) {
-            // a.onclick = function() {
+            //     a.onclick = function() {
 
-            //     var x = ajax.get(href, {
-            //         "X-Requested-With": "XMLHttpRequest",
-            //         "X-Alt-Referer": "http://rutracker.org"
-            //     }, function(data) {
-            //         alert(data);
-            //     });
+            //         var x = ajax.get(href, function(data) {
+            //             data.match
+            //         });
 
-            // }
-            // })('https://jsonp.nodejitsu.com/?url=' + item[prop].href);
-
-            a.innerText = item[prop].size;
+            //     }
+            // })('https://jsonp.nodejitsu.com/?url=' + a.href);
+            ajax.get('https://jsonp.nodejitsu.com/?url=' + a.href, function(data) {
+                a.innerText = data.match(/[0-9A-F]{40}/);
+            });
+            // a.innerText = item[prop].size;
             a.target = "_blank";
             td.appendChild(a);
         } else {
