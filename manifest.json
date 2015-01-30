@@ -1,9 +1,9 @@
 {
     "manifest_version": 2,
 
-    "name": "Getting started example",
-    "description": "This extension shows a Google Image search result for the current page",
-    "version": "1.0",
+    "name": "Kinopoisk Magic Button",
+    "description": "This extension allows you to find movies' torrent on different torrent trackers, such as Rutracker, NNM-Club etc.",
+    "version": "0.1",
 
     "page_action": {
         "default_icon": "icon.png",

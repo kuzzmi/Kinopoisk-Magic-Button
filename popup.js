@@ -1,56 +1,3 @@
-function Movie(params) {
-    this.id = params.id;
-    this.title = params.title;
-    this.size = params.size;
-    this.year = params.year;
-    this.source = params.source;
-    this.resolution = params.resolution;
-    this.specs = params.specs;
-};
-
-Movie.prototype.generateRow = function() {
-    var tr = document.createElement('tr');
-    var movie = this;
-
-    tr.className = 'row';
-
-    var generateCell = function(property) {
-        var td = document.createElement('td');
-        td.className = 'cell ' + property;
-        td.innerText = movie[property];
-        return td;
-    };
-
-    var addCell = function(property) {
-        tr.appendChild(generateCell(property));
-    }
-
-    addCell('resolution');
-    addCell('size');
-    addCell('year');
-    addCell('title');
-
-    return tr;
-};
-
-function MoviesCollection(movies) {
-    this.movies = movies || [];
-};
-
-MoviesCollection.prototype.add = function(movie) {
-    this.movies.push(movie);
-};
-
-MoviesCollection.prototype.get = function(sortProp, desc) {
-    return this.movies.sort(function(a, b) {
-        if (desc) {
-            return +a[sortProp] - +b[sortProp];
-        } else {
-            return +b[sortProp] - +a[sortProp];
-        }
-    });
-};
-
 function getMovieTitle(callback) {
     // Query filter to be passed to chrome.tabs.query - see
     // https://developer.chrome.com/extensions/tabs#method-query
@@ -59,35 +6,16 @@ function getMovieTitle(callback) {
         currentWindow: true
     };
 
+    if (!chrome || !chrome.tabs) {
+        callback('Avatar');
+        return;
+    }
+
     chrome.tabs.query(queryInfo, function(tabs) {
-        // chrome.tabs.query invokes the callback with a list of tabs that match the
-        // query. When the popup is opened, there is certainly a window and at least
-        // one tab, so we can safely assume that |tabs| is a non-empty array.
-        // A window can only have one active tab at a time, so the array consists of
-        // exactly one tab.
         var tab = tabs[0];
-
-        // A tab is a plain object that provides information about the tab.
-        // See https://developer.chrome.com/extensions/tabs#type-Tab
         var title = tab.title;
-
-        // tab.url is only available if the "activeTab" permission is declared.
-        // If you want to see the URL of other tabs (e.g. after removing active:true
-        // from |queryInfo|), then the "tabs" permission is required to see their
-        // "url" properties.
-        // console.assert(typeof url == 'string', 'tab.url should be a string');
-        // console.log(tab);
         callback(title);
     });
-
-    // Most methods of the Chrome extension APIs are asynchronous. This means that
-    // you CANNOT do something like this:
-    //
-    // var url;
-    // chrome.tabs.query(queryInfo, function(tabs) {
-    //   url = tabs[0].url;
-    // });
-    // alert(url); // Shows "undefined", because chrome.tabs.query is async.
 }
 
 var ajax = {
@@ -113,6 +41,88 @@ var ajax = {
     }
 };
 
+function TrackerSearch(url, term, parseRules) {
+    this.searchUrl = url + encodeURIComponent(term);
+    this.parseRules = parseRules;
+};
+
+TrackerSearch.prototype.search = function(callback, errorCallback) {
+    var me = this;
+    ajax.get(me.searchUrl, function(response) {
+        var movies = new MoviesCollection();
+        var container = document.createElement('div');
+        container.innerHTML = response;
+
+        var rows = container.getElementsByTagName(me.parseRules.rows);
+
+        console.log(me.searchUrl, me.parseRules.rows, rows);
+
+        for (var i = 0; i < rows.length; i++) {
+            var row = rows[i];
+            var fields = row.getElementsByTagName(me.parseRules.cells)
+
+            movies.add(new Movie({
+                resolution: me.applyParseRule(fields, me.parseRules.resolution),
+                id: me.applyParseRule(fields, me.parseRules.id),
+                size: me.applyParseRule(fields, me.parseRules.size),
+                year: me.applyParseRule(fields, me.parseRules.year),
+                title: me.applyParseRule(fields, me.parseRules.title)
+            }));
+        }
+
+        callback(movies);
+    }, function() {});
+};
+
+TrackerSearch.prototype.applyParseRule = function(fields, rule) {
+    var result;
+    var elem = fields[rule.index];
+
+    if (rule.processing) {
+        result = rule.processing(elem);
+        console.log(result);
+    } else {
+        result = elem.innerText.trim();
+    }
+
+    return result;
+};
+
+function RutrackerSearch(searchTerm) {
+    var me = new TrackerSearch(this.url, searchTerm, this.parseRules);
+
+    return me;
+};
+
+RutrackerSearch.prototype.url = 'http://rutracker.org/forum/tracker.php?f=313&nm=';
+RutrackerSearch.prototype.parseRules = {
+    rows: '#tor-tbl .tCenter.hl-tr',
+    cells: 'td',
+
+    resolution: {
+        index: 3,
+        processing: function(elem) {
+            return elem.innerText.trim().match(/720|1080/)[0] || 0;
+        }
+    },
+
+    id: {
+        index: 2
+    },
+
+    size: {
+        index: 2
+    },
+
+    year: {
+        index: 2
+    },
+
+    title: {
+        index: 2
+    }
+};
+
 /**
  * @param {string} searchTerm - Search term for Google Image search.
  * @param {function(string,number,number)} callback - Called when an image has
@@ -121,7 +131,11 @@ var ajax = {
  *   The callback gets a string that describes the failure reason.
  */
 function search(searchTerm, callback, errorCallback) {
-    var nnm = 'http://nnm-club.me/forum/tracker.php?f=227&nm=';
+
+    var rs = new RutrackerSearch(searchTerm);
+    rs.search(callback);
+
+    /* var nnm = 'http://nnm-club.me/forum/tracker.php?f=227&nm=';
     var rutracker = 'http://rutracker.org/forum/tracker.php?f=313&nm=';
     var encoded = encodeURIComponent(searchTerm);
     var movies = new MoviesCollection();
@@ -171,7 +185,7 @@ function search(searchTerm, callback, errorCallback) {
 
     }, function() {
         errorCallback('Network error.');
-    });
+    });*/
 }
 
 function renderStatus(statusText) {
