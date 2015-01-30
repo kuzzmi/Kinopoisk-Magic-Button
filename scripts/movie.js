@@ -2,13 +2,14 @@ function Movie(params) {
     this.id = params.id;
     this.title = params.title;
     this.size = params.size;
+    this.director = params.director;
     this.year = params.year;
     this.source = params.source;
     this.resolution = params.resolution;
     this.specs = params.specs;
 };
 
-Movie.prototype.generateRow = function() {
+Movie.prototype.generateRow = function(cells) {
     var tr = document.createElement('tr');
     var movie = this;
 
@@ -25,10 +26,9 @@ Movie.prototype.generateRow = function() {
         tr.appendChild(generateCell(property));
     }
 
-    addCell('resolution');
-    addCell('size');
-    addCell('year');
-    addCell('title');
+    for (var i = 0; i < cells.length; i++) {
+        addCell(cells[i]);
+    };
 
     return tr;
 };

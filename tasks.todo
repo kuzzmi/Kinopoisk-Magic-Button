@@ -1,0 +1,24 @@
+--- ✄ -----------------------
+
+Enhacements:
+
+--- ✄ -----------------------
+
+    Extension Development:
+        [ ] Refactor parser
+        [ ] Provide [TRACKERNAME].rules.js file of parserRules to cover general parsing things
+            That will allow to write parsers faster
+
+--- ✄ -----------------------
+
+    Features:
+        [ ] Downloading .torrent file
+        [ ] Creating a magnet link
+
+--- ✄ -----------------------
+
+Bugs:
+
+--- ✄ -----------------------
+
+Archive:
