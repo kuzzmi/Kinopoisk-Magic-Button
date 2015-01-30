@@ -3,7 +3,7 @@
 
     "name": "Kinopoisk Magic Button",
     "description": "This extension allows you to find movies' torrent on different torrent trackers, such as Rutracker, NNM-Club etc.",
-    "version": "0.1",
+    "version": "0.1a",
 
     "page_action": {
         "default_icon": "icon.png",
@@ -12,7 +12,7 @@
     },
 
     "background": {
-        "scripts": ["background.js"]
+        "scripts": ["scripts/background.js"]
     },
 
     "permissions": [
