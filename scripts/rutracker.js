@@ -1,13 +1,22 @@
 function Rutracker() {};
 
 Rutracker.prototype.search = function(searchTerm, callback, errorCallback) {
-    var searcher = new TrackerSearch(this.url, searchTerm, this.parseRules);
-    return searcher.search(callback, errorCallback);
+    var ts = new TrackerSearch(this.url, searchTerm, this.parseRules);
+    return ts.search(callback, errorCallback);
 }
+
 Rutracker.prototype.url = 'http://rutracker.org/forum/tracker.php?f=313&nm=';
 Rutracker.prototype.parseRules = {
     rows: '#tor-tbl .tCenter.hl-tr',
     cells: 'td',
+
+    href: {
+        index: 3,
+        processing: function(elem) {
+            return 'http://rutracker.org/forum/viewtopic.php?t=' +
+                elem.getElementsByTagName('a')[0].dataset.topic_id;
+        }
+    },
 
     resolution: {
         index: 3,

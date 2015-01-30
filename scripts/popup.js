@@ -44,30 +44,27 @@ Element.prototype.prependChild = function(child) {
 };
 
 function renderTable(moviesCollection) {
-    var table = document.getElementById('table');
-    var items = moviesCollection.get();
+    var columns = [{
+        title: 'Resolution',
+        field: 'resolution'
+    }, {
+        title: 'Size',
+        field: 'size'
+    }, {
+        title: 'Year',
+        field: 'year'
+    }, {
+        title: 'Title',
+        field: 'title:href',
+    }, {
+        title: 'Director',
+        field: 'director'
+    }];
 
-    var rows = [];
-
-    var props = [
-        'resolution',
-        'size',
-        'year',
-        'title',
-        'director'
-    ];
-
-    for (var i = 0; i < items.length; i++) {
-        rows.push(items[i].generateRow(props));
-    }
-
-    printResultsAmount(rows);
-
-    for (var i = 0; i < rows.length; i++) {
-        table.appendChild(rows[i]);
-    };
-
-}
+    var table = moviesCollection.generateTable(columns, 'resolution');
+    var container = document.querySelector('.container');
+    container.appendChild(table);
+};
 
 function printResultsAmount(items) {
     var resultsCount = document.getElementById('results-count');

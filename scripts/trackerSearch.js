@@ -24,6 +24,7 @@ TrackerSearch.prototype.search = function(callback, errorCallback) {
                 year: me.applyParseRule(fields, me.parseRules.year),
                 title: me.applyParseRule(fields, me.parseRules.title),
                 director: me.applyParseRule(fields, me.parseRules.director),
+                href: me.applyParseRule(fields, me.parseRules.href),
             }));
         }
 

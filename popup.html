@@ -1,16 +1,11 @@
 <!doctype html>
-<!--
- This page is shown when the extension button is clicked, because the
- "browser_action" field in manifest.json contains the "default_popup" key with
- value "popup.html".
- -->
 <html>
   <head>
-    <title>Getting Started Extension's Popup</title>
+    <title>List of Movies</title>
     <style>
       body {
         font-family: "Open Sans", "Segoe UI", "Lucida Grande", Tahoma, sans-serif;
-        font-size: 80%;
+        font-size: 75%;
       }
       table {
         /* avoid an excessively wide status text */
@@ -29,8 +24,11 @@
       .res720 {
         background-color: #FEFFBF;
       }
-      .resUnknown {
+      .res0 {
         background-color: #E1E1E1;
+      }
+      .row:hover {
+        background-color: #D7EEFF;
       }
     </style>
 
@@ -43,21 +41,9 @@
   </head>
   <body>
     <!-- <div id="title"></div> -->
-    <div>
+    <div class="container">
       <div id="results-count">Results: <span></span></div>
-      <table id="table">
-        <thead>
-          <tr>
-            <th>Resolution</th>
-            <th>Size</th>
-            <th>Year</th>
-            <th>Title</th>
-            <th>Director</th>
-          </tr>
-        </thead>
-      </table>
     </div>
     <!-- <img id="image-result" hidden> -->
   </body>
 </html>
-
