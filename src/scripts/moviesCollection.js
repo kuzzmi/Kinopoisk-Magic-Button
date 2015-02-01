@@ -22,6 +22,11 @@ MoviesCollection.prototype.get = function(sortProp, desc) {
 
 MoviesCollection.prototype.generateTable = function(columns, sortProp, desc) {
     var table = document.createElement('table');
+    table.style.width = '100%';
+    table.style.padding = '5px 5px 25px 5px';
+    table.cellspacing = '0';
+    table.cellpadding = '0';
+    table.border = '0';
     var movies = this.get(sortProp, desc);
     var fields = columns.map(function(column) {
         return column.field;

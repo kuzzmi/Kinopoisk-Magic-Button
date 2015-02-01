@@ -1,0 +1,39 @@
+{
+    "manifest_version": 2,
+
+    "name": "Kinopoisk Torrent Fetcher",
+    "description": "This extension allows you to find movies' torrent on different torrent trackers, such as Rutracker, NNM-Club etc.",
+    "version": "0.1",
+
+    "page_action": {
+        "default_icon": "icon.png",
+        "default_popup": "popup.html",
+        "default_title": "Click here!"
+    },
+
+    "background": {
+        "scripts": [
+            "scripts/background.js"
+        ]
+    },
+
+    "content_scripts": [{
+        "matches": [
+            "*://www.kinopoisk.ru/film/*"
+        ],
+        "js": [
+            "scripts/utils.js",
+            "scripts/movie.js",
+            "scripts/moviesCollection.js",
+            "scripts/trackerSearch.js",
+            "scripts/rutracker.rules.js",
+            "scripts/content.js"
+        ],
+        "run_at": "document_end"
+    }],
+
+    "permissions": [
+        "tabs",
+        "*://rutracker.org/*"
+    ]
+}

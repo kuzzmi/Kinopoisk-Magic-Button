@@ -28,7 +28,11 @@ Movie.prototype.generateRow = function(cells) {
             var a = document.createElement('a');
             a.href = movie[linkProp];
             a.target = '_blank';
-            a.innerText = movie[baseProp];
+            if (baseProp[0] === '"') {
+                a.innerText = baseProp.slice(1, -1);
+            } else {
+                a.innerText = movie[baseProp];
+            }
             td.appendChild(a);
         } else {
             td.innerText = movie[property];
